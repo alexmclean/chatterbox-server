@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>chatterbox</title>
+    <link rel="stylesheet" href="styles/styles.css">
+
+    <!-- dependencies -->
+    <script src="bower_components/underscore/underscore.js"></script>
+    <script src="bower_components/jquery/dist/jquery.js"></script>
+    <script src="bower_components/backbone/backbone.js"></script>
+    
+    <script src="env/config.js"></script>
+    <!-- your scripts 
+    <script src="scripts/app.js"></script> -->
+    
+  </head>
+  <body>
+    <div id="main">
+      <h1>chatterbox</h1>
+      <div class="spinner"><img src="images/spiffygif_46x46.gif"></div>
+      
+      <form>
+        <input id="message" type="text" placeholder="Type here">
+        <input id="send" class ="submit" type="submit">
+        <input id="user" type="text" placeholder="Enter your name">
+      </form>
+      <!--
+      <label>Current Chatroom: </label>
+      <select id="roomSelect">
+      </select>
+      <div>
+        <label>Name your new room: </label>
+        <input id="roomMaker" type="text" placeholder="Create a new chat room">
+      </div> -->
+    </div>
+    <div id="chats"></div> 
+    <script src="scripts/backboneApp.js"></script>
+    <script>
+      $(function(){
+        var chats     = new Chats();
+        var formView     = new FormView(    {el: $('#main'),  collection: chats})
+        var messagesView = new ChatsView({el: $('#chats'), collection: chats});
+        setInterval(chats.getMessages.bind(chats), 2000);
+        chats.getMessages();
+      });
+    </script>
+  </body>
+</html>
