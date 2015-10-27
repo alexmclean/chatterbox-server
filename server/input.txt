@@ -1,1 +1,1 @@
-{"username":"alex","text":"ffrfer tgrgr"}
+{"username":"","text":"fff","objectId":2}{"username":"","text":"efefe","objectId":7}{"username":"","text":"hello","objectId":9}

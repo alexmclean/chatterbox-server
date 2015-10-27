@@ -74,15 +74,19 @@ var requestHandler = function(request, response) {
     response.end(headers['access-control-allow-methods'] ); 
 
   } else if(request.method === "POST"){
-
+    var parsedObj;
     // Handle stream events --> data, end, and error
     request.on('data', function(chunk) {
        data += chunk;
     });
 
     request.on('end',function(){
-       console.log(data);
-       writerStream.write(data,'UTF8');
+       parsedObj = JSON.parse(data);
+       parsedObj.objectId = id;
+       id++;
+       console.log(parsedObj);
+       results.push(parsedObj);
+       writerStream.write(JSON.stringify(parsedObj),'UTF8');
        data = '';
     });
 
@@ -90,14 +94,25 @@ var requestHandler = function(request, response) {
        console.log(err.stack);
     });
 
-    response.writeHead(200, {'Content-Type': 'text/html'});
-    var finalResult = JSON.stringify({results: results});
+    response.writeHead(statusCode, headers);
+    //results = results.concat([{username: "alex", text: "you found our server", objectId: id}]);
+
+    var finalResult = JSON.stringify(parsedObj);
     response.end(finalResult);
     
-
     console.log("trying to post");
 
   } else {
+ 
+    fs.readFile('input.txt', 'utf8', function (err,data) {
+      if (err) {
+        return console.log(err);
+      }
+      console.log("Hello data " + data);
+    });
+
+
+
 
     response.writeHead(statusCode, headers);
     results = results.concat([{username: "alex", text: "you found our server", objectId: id}]);
