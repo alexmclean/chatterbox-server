@@ -11,11 +11,32 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
+var fs = require("fs");
 
+var data = '';
 var results = [];
+var readerStream;
+var writerStream;
 var id = 1;
 
+var streamInit = false;
+
+  
 var requestHandler = function(request, response) {
+
+
+  if(streamInit === false) {
+    // Create a readable stream
+    readerStream = fs.createReadStream('input.txt');
+    writerStream = fs.createWriteStream('input.txt');
+
+  // Set the encoding to be utf8. 
+    readerStream.setEncoding('UTF8');
+    streamInit = true;
+  }
+
+
+
   // Request and Response come from node's http module.
   //
   // They include information about both the incoming request, such as
@@ -47,19 +68,51 @@ var requestHandler = function(request, response) {
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
+  if(request.method === "OPTIONS"){
+    response.writeHead(statusCode, headers);
+    headers['Content-Type'] = "text/plain";
+    response.end(headers['access-control-allow-methods'] ); 
 
-  response.writeHead(statusCode, headers);
-  results = results.concat([{username: "alex", text: "you found our server", objectId: id}]);
-  id++;
+  } else if(request.method === "POST"){
 
-  // Make sure to always call response.end() - Node may not send
-  // anything back to the client until you do. The string you pass to
-  // response.end() will be the body of the response - i.e. what shows
-  // up in the browser.
-  var finalResult = JSON.stringify({results: results});
-  // Calling .end "flushes" the response's internal buffer, forcing
-  // node to actually send all the data over to the client.
-  response.end(finalResult);
+    // Handle stream events --> data, end, and error
+    request.on('data', function(chunk) {
+       data += chunk;
+    });
+
+    request.on('end',function(){
+       console.log(data);
+       writerStream.write(data,'UTF8');
+       data = '';
+    });
+
+    request.on('error', function(err){
+       console.log(err.stack);
+    });
+
+    response.writeHead(200, {'Content-Type': 'text/html'});
+    var finalResult = JSON.stringify({results: results});
+    response.end(finalResult);
+    
+
+    console.log("trying to post");
+
+  } else {
+
+    response.writeHead(statusCode, headers);
+    results = results.concat([{username: "alex", text: "you found our server", objectId: id}]);
+    id++;
+
+    var finalResult = JSON.stringify({results: results});
+    // Calling .end "flushes" the response's internal buffer, forcing
+    // node to actually send all the data over to the client.
+    response.end(finalResult);
+  }
+  
+
+
+
+
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
